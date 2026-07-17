@@ -3,10 +3,14 @@ import asyncio
 import json
 import sys
 import os
+import shutil
+import math
+from functools import lru_cache
+import pandas as pd
 sys.path.insert(0, os.path.dirname(__file__))
 
 import uvicorn
-from fastapi import FastAPI, Header, HTTPException
+from fastapi import FastAPI, Header, HTTPException, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from src.llm_client import LLMClient
@@ -191,6 +195,89 @@ async def explain_claim(req: ExplainRequest):
     explainer = EvidenceExplainer(_last_ledger)
     explanation = explainer.explain_claim(req.claim_id)
     return {"claim_id": req.claim_id, "explanation": explanation}
+
+
+# ── Datasets API ──────────────────────────────────────────────────────────────
+
+USER_UPLOADS_DIR = os.path.join(os.path.dirname(__file__), "datasets", "user_uploads")
+os.makedirs(USER_UPLOADS_DIR, exist_ok=True)
+
+@lru_cache(maxsize=5)
+def load_dataset(file_path: str):
+    if file_path.endswith('.csv'):
+        return pd.read_csv(file_path)
+    elif file_path.endswith(('.xls', '.xlsx')):
+        return pd.read_excel(file_path)
+    elif file_path.endswith('.json'):
+        return pd.read_json(file_path)
+    else:
+        raise ValueError("Unsupported file format")
+
+@app.get("/api/datasets")
+async def list_datasets():
+    datasets = []
+    if os.path.exists(USER_UPLOADS_DIR):
+        for f in os.listdir(USER_UPLOADS_DIR):
+            if not f.startswith('.') and not f.startswith('~'):
+                file_path = os.path.join(USER_UPLOADS_DIR, f)
+                if os.path.isfile(file_path):
+                    size_mb = os.path.getsize(file_path) / (1024 * 1024)
+                    datasets.append({
+                        "id": f,
+                        "name": f,
+                        "type": "uploaded",
+                        "size_mb": round(size_mb, 2)
+                    })
+    return {"datasets": datasets}
+
+@app.post("/api/datasets/upload")
+async def upload_dataset(file: UploadFile = File(...)):
+    if not file.filename.endswith(('.csv', '.xlsx', '.xls', '.json')):
+        raise HTTPException(status_code=400, detail="Unsupported file format. Please upload CSV, Excel, or JSON.")
+    
+    file_path = os.path.join(USER_UPLOADS_DIR, file.filename)
+    with open(file_path, "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    return {"status": "success", "filename": file.filename}
+
+class DatasetSearchRequest(BaseModel):
+    dataset_id: str
+    keyword: str = ""
+    page: int = 1
+    page_size: int = 50
+
+@app.post("/api/datasets/search")
+async def search_dataset(req: DatasetSearchRequest):
+    file_path = os.path.join(USER_UPLOADS_DIR, req.dataset_id)
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=404, detail="Dataset not found")
+        
+    try:
+        df = load_dataset(file_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error loading dataset: {str(e)}")
+        
+    if req.keyword:
+        mask = df.astype(str).apply(lambda x: x.str.contains(req.keyword, case=False, na=False)).any(axis=1)
+        df = df[mask]
+        
+    total_records = len(df)
+    total_pages = math.ceil(total_records / req.page_size) if req.page_size > 0 else 1
+    
+    start_idx = (req.page - 1) * req.page_size
+    end_idx = start_idx + req.page_size
+    
+    page_data = df.iloc[start_idx:end_idx].fillna("").to_dict(orient="records")
+    
+    return {
+        "columns": df.columns.tolist(),
+        "data": page_data,
+        "total_records": total_records,
+        "total_pages": total_pages,
+        "page": req.page,
+        "page_size": req.page_size
+    }
 
 
 if __name__ == "__main__":

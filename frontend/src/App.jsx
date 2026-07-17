@@ -10,6 +10,7 @@ import ReportView from './components/ReportView'
 import ToolPanel from './components/ToolPanel'
 import MagneticCursor from './components/MagneticCursor'
 import ApiKeyModal from './components/ApiKeyModal'
+import { DatasetExplorer } from './components/DatasetExplorer'
 
 const API_BASE = '/api'
 
@@ -18,6 +19,7 @@ export default function App() {
   const [investigating, setInvestigating] = useState(false)
   const [results, setResults] = useState(null)
   const [error, setError] = useState(null)
+  const [activeTab, setActiveTab] = useState('investigation') // 'investigation' or 'datasets'
   const lenis = useLenis()
 
   // API Key management states
@@ -188,44 +190,81 @@ export default function App() {
           )}
         </div>
 
-        <SearchBar onInvestigate={handleInvestigate} loading={investigating} />
-        {investigating && (
-          <section className="section">
-            <div className="container">
-              <p className="mono" style={{
-                color: 'var(--data)', fontSize: '0.875rem',
-                animation: 'pulse 1.5s ease-in-out infinite',
-              }}>
-                {'>'} running investigation<span className="dots"></span>
-              </p>
-            </div>
-          </section>
-        )}
-        {error && (
-          <section className="section" style={{ paddingTop: 0 }}>
-            <div className="container">
-              <p className="mono" style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>
-                {'!'} {error}
-              </p>
-            </div>
-          </section>
-        )}
-        {results && (
+        <div className="container" style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '1rem', marginTop: '1rem' }}>
+          <button
+            onClick={() => setActiveTab('investigation')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: activeTab === 'investigation' ? 'var(--text-primary)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontWeight: activeTab === 'investigation' ? 'bold' : 'normal',
+              padding: '0.5rem 1rem',
+              borderBottom: activeTab === 'investigation' ? '2px solid var(--text-primary)' : '2px solid transparent',
+            }}
+          >
+            Investigation Board
+          </button>
+          <button
+            onClick={() => setActiveTab('datasets')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: activeTab === 'datasets' ? 'var(--text-primary)' : 'var(--text-secondary)',
+              cursor: 'pointer',
+              fontWeight: activeTab === 'datasets' ? 'bold' : 'normal',
+              padding: '0.5rem 1rem',
+              borderBottom: activeTab === 'datasets' ? '2px solid var(--text-primary)' : '2px solid transparent',
+            }}
+          >
+            Dataset Explorer
+          </button>
+        </div>
+
+        {activeTab === 'investigation' ? (
           <>
-            <InvestigationBoard claims={results.claims} />
-            <ContradictionPanel contradictions={results.contradictions} claims={results.claims} />
-            <ReportView claims={results.claims} contradictions={results.contradictions} query={query} report={results.report} reportConfidence={results.report_confidence} />
-            <ToolPanel sources={results.sources} />
+            <SearchBar onInvestigate={handleInvestigate} loading={investigating} />
+            {investigating && (
+              <section className="section">
+                <div className="container">
+                  <p className="mono" style={{
+                    color: 'var(--data)', fontSize: '0.875rem',
+                    animation: 'pulse 1.5s ease-in-out infinite',
+                  }}>
+                    {'>'} running investigation<span className="dots"></span>
+                  </p>
+                </div>
+              </section>
+            )}
+            {error && (
+              <section className="section" style={{ paddingTop: 0 }}>
+                <div className="container">
+                  <p className="mono" style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>
+                    {'!'} {error}
+                  </p>
+                </div>
+              </section>
+            )}
+            {results && (
+              <>
+                <InvestigationBoard claims={results.claims} />
+                <ContradictionPanel contradictions={results.contradictions} claims={results.claims} />
+                <ReportView claims={results.claims} contradictions={results.contradictions} query={query} report={results.report} reportConfidence={results.report_confidence} />
+                <ToolPanel sources={results.sources} />
+              </>
+            )}
+            {!results && !investigating && !error && (
+              <footer className="section" style={{ paddingTop: 0 }}>
+                <div className="container">
+                  <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
+                    Enter an entity, person, or organization to begin.
+                  </p>
+                </div>
+              </footer>
+            )}
           </>
-        )}
-        {!results && !investigating && !error && (
-          <footer className="section" style={{ paddingTop: 0 }}>
-            <div className="container">
-              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>
-                Enter an entity, person, or organization to begin.
-              </p>
-            </div>
-          </footer>
+        ) : (
+          <DatasetExplorer />
         )}
       </ReactLenis>
     </>
