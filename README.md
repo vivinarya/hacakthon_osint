@@ -7,9 +7,9 @@ An autonomous investigative agent that researches entities, people, and organiza
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    REACT FRONTEND (Vite)                    │
-│  Header · SearchBar · InvestigationBoard · Contradiction   │
-│  Panel · ReportView · ToolPanel · MagneticCursor           │
-│  GSAP animations · Lenis smooth scroll                     │
+│  Header · SearchBar · InvestigationBoard · Contradiction    │
+│  Panel · ReportView · ToolPanel · MagneticCursor            │
+│  GSAP animations · Lenis smooth scroll                      │
 └──────────────────────┬──────────────────────────────────────┘
                        │ HTTP (POST /api/investigate)
                        ▼
@@ -20,7 +20,7 @@ An autonomous investigative agent that researches entities, people, and organiza
                        │
                        ▼
 ┌─────────────────────────────────────────────────────────────┐
-│              INVESTIGATIVE AGENT (react_loop.py)             │
+│              INVESTIGATIVE AGENT (react_loop.py)            |
 ├───────────────┬────────────────┬────────────────────────────┤
 │   PLANNER     │   EXECUTOR     │   CLAIM EXTRACTOR          │
 │  (planner.py) │ (executor.py)  │ (claim_extractor.py)       │
@@ -49,8 +49,8 @@ An autonomous investigative agent that researches entities, people, and organiza
 └───────┬───────┘ └──────┬───────┘ └──────────┬───────────┘
         │                │                    │
         ▼                ▼                    ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    OSINT DATA SOURCES                       │
+┌────────────────────────────────────────────────────────────
+│                    OSINT DATA SOURCES                      | 
 ├──────────┬──────────┬───────────┬──────────┬───────────────┤
 │ Wikidata │ ICIJ     │ OFAC SDN  │ GDELT    │ Web Search    │
 │ SPARQL   │ Offshore │ Sanctions │ Conflict │ (Firecrawl)   │
