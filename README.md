@@ -56,7 +56,7 @@ An autonomous investigative agent that researches entities, people, and organiza
 │ SPARQL   │ Offshore │ Sanctions │ Conflict │ (Firecrawl)   │
 │ queries  │ Leaks DB │ List      │ Events   │               │
 ├──────────┼──────────┼───────────┼──────────┼───────────────┤
-│ Open-    │ Wayback  │ OpenCorp  │ Web      │  UI           │
+│ Open-    │ Wayback  │ OpenCorp  │ Web      │STREAMLIT UI   │
 │ Sanctions│ Machine  │ (paid,    │ Scraper  │ (standalone)  │
 │ API      │ CDX API  │ degraded) │ (BS4)    │               │
 └──────────┴──────────┴───────────┴──────────┴───────────────┘
