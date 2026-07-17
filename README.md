@@ -171,9 +171,7 @@ python run.py --cli "Investigate Mossack Fonseca and related offshore entities"
 | **ICIJ Offshore Leaks** | Offshore entity DB | Local CSV (~898MB) | Panama/Pandora/Paradise Papers |
 | **OFAC SDN List** | Sanctions list | Local CSV (19K+ entries) | US sanctions |
 | **GDELT** | Global event database | Daily CSV files | Global news events |
-| **OpenSanctions** | Sanctions/PEP data | Public API | 2.1M entities |
 | **Firecrawl** | Web search + scrape | API key | Web search |
-| **Wayback Machine** | Archived pages | CDX API | Web archiving |
 
 ## Features
 
@@ -232,12 +230,8 @@ Claims are ultimately classified into actionable states: `VERIFIED_FACT` (CS ≥
 │   │   ├── icij_data.py         # ICIJ Offshore Leaks queries
 │   │   ├── gdelt.py             # GDELT event queries
 │   │   ├── ofac_sdn.py          # OFAC SDN sanctions queries
-│   │   ├── opensanctions.py     # OpenSanctions API
-│   │   ├── wayback.py           # Wayback Machine API
 │   │   ├── web_search.py        # Web search (Firecrawl/Tavily/Serper)
-│   │   ├── web_scraper.py       # HTML scraper
-│   │   ├── firecrawl_scraper.py # Firecrawl scrape/search/map/extract
-│   │   └── opencorporates.py    # OpenCorporates (paid, degraded)
+│   │   └── firecrawl_scraper.py # Firecrawl scrape/search/map/extract
 │   ├── verification/
 │   │   ├── orchestrator.py          # Central Scoring Orchestrator
 │   │   ├── source_tagger.py         # Source Authority Agent

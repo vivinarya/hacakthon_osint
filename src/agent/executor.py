@@ -8,19 +8,14 @@ from src.evidence_ledger import EvidenceLedger, Source
 from src.agent.claim_extractor import ClaimExtractor
 from src.tools.base import ToolResult
 from src.tools import (
-    WebSearchTool, WebScraperTool, WikidataTool,
-    OpenCorporatesTool, OpenSanctionsTool, WaybackTool,
+    WebSearchTool, WikidataTool,
     FirecrawlScraperTool, FirecrawlSearchTool, FirecrawlMapTool, FirecrawlExtractTool,
     ICIJDataTool, OFACSDNTool, GDELTTool,
 )
 
 TOOL_REGISTRY = {
     "web_search": WebSearchTool(),
-    "web_scraper": WebScraperTool(),
     "wikidata": WikidataTool(),
-    "opencorporates": OpenCorporatesTool(),
-    "opensanctions": OpenSanctionsTool(),
-    "wayback": WaybackTool(),
     "firecrawl_scraper": FirecrawlScraperTool(),
     "firecrawl_search": FirecrawlSearchTool(),
     "firecrawl_map": FirecrawlMapTool(),
@@ -148,7 +143,7 @@ and this follow-up question: {query}
 
 Choose the best tool and parameters. Return JSON: {{"tool": "...", "params": {{...}}}}
 
-Available tools: web_search, firecrawl_search, web_scraper, firecrawl_scraper, wikidata, opencorporates, opensanctions, wayback"""
+Available tools: web_search, firecrawl_search, firecrawl_scraper, wikidata, icij_data, ofac_sdn, gdelt"""
         response = await self.llm.generate_json(prompt)
         if isinstance(response, dict) and "tool" in response:
             plan = [response]
