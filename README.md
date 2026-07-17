@@ -83,14 +83,23 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### Configuration
-Create `.env` (a template is provided):
+### Configuration (Deployment Ready)
+Create a `.env` file in the root directory (based on `.env.example`):
 ```env
-OPENAI_API_KEY=sk-or-v1-...
-OPENAI_BASE_URL=https://openrouter.ai/api/v1
-OPENAI_MODEL=openai/gpt-oss-20b:free
-FIRECRAWL_API_KEY=fc-...
+# Leave empty to require client-supplied keys in the browser:
+OPENAI_API_KEY=
+OPENAI_BASE_URL=https://bazaarlink.ai/api/v1
+OPENAI_MODEL=gpt-oss-20b
+
+FIRECRAWL_API_KEY=
+STEP_CAP=15
+LOG_LEVEL=INFO
 ```
+*Note: If `OPENAI_API_KEY` and `FIRECRAWL_API_KEY` are left blank on the server, the frontend will automatically lock the board and prompt the user to input their keys in the initialization setup screen. If configured on the server, the frontend will seamlessly use the server's keys with the option to override them locally.*
+
+### API Credentials Required
+1. **BazaarLink API Key**: Sign up at [bazaarlink.ai](https://bazaarlink.ai) to obtain your key. We recommend using fast, low-cost models like `gpt-oss-20b` or `gemma-3-12b-it`.
+2. **Firecrawl API Key**: Sign up at [firecrawl.dev](https://firecrawl.dev) to get a web searching/scraping key.
 
 ### Run Backend (API Server)
 ```bash
@@ -233,3 +242,12 @@ Claims are ultimately classified into actionable states: `VERIFIED_FACT` (CS ≥
     ├── demo_contradiction_query.py
     └── demo_corporate_query.py
 ```
+
+## Screenshots
+
+*(Screenshots of the setup screen, evidence cards, contradiction panels, and final reports)*
+
+- **API Credentials Setup Screen**: `![Setup Screen Placeholder](docs/setup_screen.png)`
+- **GSAP Evidence Board Grid**: `![Evidence Board Placeholder](docs/evidence_board.png)`
+- **Side-by-Side Contradiction Panel**: `![Contradiction Panel Placeholder](docs/contradiction_panel.png)`
+- **Metrics Dashboard & Narrative Report**: `![Narrative Report Placeholder](docs/report_view.png)`
