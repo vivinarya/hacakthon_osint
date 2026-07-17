@@ -5,8 +5,9 @@ from src.config import LLM_PROVIDER, ANTHROPIC_API_KEY, OPENAI_API_KEY, OPENAI_B
 
 
 class LLMClient:
-    def __init__(self):
+    def __init__(self, api_key: str | None = None):
         self.provider = LLM_PROVIDER
+        self.api_key = api_key
 
     async def generate_json(self, prompt: str) -> dict | list:
         text = await self._generate_text(prompt, max_tokens=4096)
@@ -26,7 +27,7 @@ class LLMClient:
         import asyncio
         try:
             import google.generativeai as genai
-            genai.configure(api_key=GEMINI_API_KEY)
+            genai.configure(api_key=self.api_key or GEMINI_API_KEY)
             model = genai.GenerativeModel(GEMINI_MODEL)
             
             max_retries = 5
@@ -69,7 +70,7 @@ class LLMClient:
     async def _openai_call(self, prompt: str, max_tokens: int) -> str:
         try:
             from openai import AsyncOpenAI
-            kwargs = {"api_key": OPENAI_API_KEY or "sk-dummy"}
+            kwargs = {"api_key": self.api_key or OPENAI_API_KEY or "sk-dummy"}
             if OPENAI_BASE_URL:
                 kwargs["base_url"] = OPENAI_BASE_URL
             client = AsyncOpenAI(**kwargs)

@@ -31,9 +31,11 @@ TOOL_REGISTRY = {
 }
 
 
-async def _run_one_step(step: dict, llm: LLMClient, ledger: EvidenceLedger, claim_extractor: ClaimExtractor) -> dict:
+async def _run_one_step(step: dict, llm: LLMClient, ledger: EvidenceLedger, claim_extractor: ClaimExtractor, firecrawl_key: str | None = None) -> dict:
     tool_name = step.get("tool", "web_search")
     params = step.get("params", {})
+    if firecrawl_key:
+        params["firecrawl_key"] = firecrawl_key
     tool = TOOL_REGISTRY.get(tool_name)
     if not tool:
         return {"step": step, "success": False, "error": f"Unknown tool: {tool_name}"}
@@ -121,19 +123,20 @@ def _forward_message(claim_ids: list[str], ledger: EvidenceLedger) -> dict:
 
 
 class Executor:
-    def __init__(self, llm: LLMClient, ledger: EvidenceLedger):
+    def __init__(self, llm: LLMClient, ledger: EvidenceLedger, firecrawl_key: str | None = None):
         self.llm = llm
         self.ledger = ledger
         self.claim_extractor = ClaimExtractor(llm)
+        self.firecrawl_key = firecrawl_key
 
     async def execute_plan(self, plan: list[dict], parallel: bool = True) -> list[dict]:
         if parallel and len(plan) > 1:
-            tasks = [_run_one_step(s, self.llm, self.ledger, self.claim_extractor) for s in plan]
+            tasks = [_run_one_step(s, self.llm, self.ledger, self.claim_extractor, self.firecrawl_key) for s in plan]
             results = await asyncio.gather(*tasks, return_exceptions=True)
             return [r if not isinstance(r, Exception) else {"step": {}, "success": False, "error": str(r)} for r in results]
         results = []
         for step in plan:
-            r = await _run_one_step(step, self.llm, self.ledger, self.claim_extractor)
+            r = await _run_one_step(step, self.llm, self.ledger, self.claim_extractor, self.firecrawl_key)
             results.append(r)
         return results
 

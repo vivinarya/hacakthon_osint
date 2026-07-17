@@ -31,11 +31,11 @@ Evidence:
 
 
 class InvestigativeAgent:
-    def __init__(self, llm: LLMClient):
+    def __init__(self, llm: LLMClient, firecrawl_key: str | None = None):
         self.llm = llm
         self.ledger = EvidenceLedger()
         self.planner = Planner(llm)
-        self.executor = Executor(llm, self.ledger)
+        self.executor = Executor(llm, self.ledger, firecrawl_key=firecrawl_key)
 
     async def investigate(self, query: str) -> dict:
         normalized_query = self._normalize_query(query)

@@ -18,12 +18,17 @@ class WebSearchTool(BaseTool):
             return ToolResult(success=False, error="No query provided")
 
         providers = []
+        user_firecrawl_key = params.get("firecrawl_key")
         if TAVILY_API_KEY:
             providers.append(lambda: self._tavily_search(query, max_results))
         if SERPER_API_KEY:
             providers.append(lambda: self._serper_search(query, max_results))
-        if FIRECRAWL_API_KEY:
-            providers.append(lambda: FirecrawlSearchTool().run({"query": query, "limit": max_results}))
+        if FIRECRAWL_API_KEY or user_firecrawl_key:
+            providers.append(lambda: FirecrawlSearchTool().run({
+                "query": query,
+                "limit": max_results,
+                "firecrawl_key": user_firecrawl_key
+            }))
         providers.append(lambda: self._duckduckgo_search(query, max_results))
 
         last_error = "No search providers available"

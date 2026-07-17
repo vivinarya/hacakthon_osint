@@ -3,7 +3,7 @@ from firecrawl import FirecrawlApp
 from .base import BaseTool, ToolResult
 from src.config import FIRECRAWL_API_KEY
 
-app = FirecrawlApp(api_key=FIRECRAWL_API_KEY)
+# Note: FirecrawlApp is instantiated dynamically inside tool runs to support user-supplied API keys
 
 
 class FirecrawlScraperTool(BaseTool):
@@ -15,8 +15,12 @@ class FirecrawlScraperTool(BaseTool):
         formats = params.get("formats", ["markdown"])
         if not url:
             return ToolResult(success=False, error="No URL provided")
+        firecrawl_key = params.get("firecrawl_key") or FIRECRAWL_API_KEY
+        if not firecrawl_key:
+            return ToolResult(success=False, error="No Firecrawl API key provided")
         try:
-            result = app.scrape_url(url, formats=formats, timeout=60000)
+            local_app = FirecrawlApp(api_key=firecrawl_key)
+            result = local_app.scrape_url(url, formats=formats, timeout=60000)
             markdown = getattr(result, "markdown", "")
             html = getattr(result, "html", "")
             metadata = getattr(result, "metadata", None)
@@ -44,8 +48,12 @@ class FirecrawlSearchTool(BaseTool):
         limit = params.get("limit", 5)
         if not query:
             return ToolResult(success=False, error="No query provided")
+        firecrawl_key = params.get("firecrawl_key") or FIRECRAWL_API_KEY
+        if not firecrawl_key:
+            return ToolResult(success=False, error="No Firecrawl API key provided")
         try:
-            result = app.search(query, limit=limit)
+            local_app = FirecrawlApp(api_key=firecrawl_key)
+            result = local_app.search(query, limit=limit)
             web_results = getattr(result, "web", [])
             if not web_results:
                 data = getattr(result, "data", [])
@@ -80,8 +88,12 @@ class FirecrawlMapTool(BaseTool):
         url = params.get("url", "")
         if not url:
             return ToolResult(success=False, error="No URL provided")
+        firecrawl_key = params.get("firecrawl_key") or FIRECRAWL_API_KEY
+        if not firecrawl_key:
+            return ToolResult(success=False, error="No Firecrawl API key provided")
         try:
-            result = app.map_url(url)
+            local_app = FirecrawlApp(api_key=firecrawl_key)
+            result = local_app.map_url(url)
             links = result.get("links", []) if isinstance(result, dict) else getattr(result, "links", [])
             return ToolResult(
                 success=True,
@@ -105,8 +117,12 @@ class FirecrawlExtractTool(BaseTool):
         prompt = params.get("prompt", "Extract all meaningful content from this page")
         if not url:
             return ToolResult(success=False, error="No URL provided")
+        firecrawl_key = params.get("firecrawl_key") or FIRECRAWL_API_KEY
+        if not firecrawl_key:
+            return ToolResult(success=False, error="No Firecrawl API key provided")
         try:
-            result = app.scrape_url(
+            local_app = FirecrawlApp(api_key=firecrawl_key)
+            result = local_app.scrape_url(
                 url,
                 formats=[{"type": "json", "prompt": prompt}],
                 timeout=60000,

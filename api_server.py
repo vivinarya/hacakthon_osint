@@ -6,13 +6,14 @@ import os
 sys.path.insert(0, os.path.dirname(__file__))
 
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Header, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from src.llm_client import LLMClient
 from src.agent.react_loop import InvestigativeAgent
 from src.reporting import ReportGenerator, EvidenceExplainer
 from src.verification import ScoringOrchestrator, ContradictionDetector
+from src.config import OPENAI_API_KEY, FIRECRAWL_API_KEY
 
 app = FastAPI(title="OSINT Investigative Agent API")
 _last_ledger = None
@@ -35,11 +36,40 @@ async def health():
     return {"status": "ok"}
 
 
+@app.get("/api/status")
+async def status():
+    return {
+        "status": "ok",
+        "has_bazaarlink": bool(OPENAI_API_KEY),
+        "has_firecrawl": bool(FIRECRAWL_API_KEY)
+    }
+
+
 @app.post("/api/investigate")
-async def investigate(req: QueryRequest):
+async def investigate(
+    req: QueryRequest,
+    x_bazaarlink_key: str | None = Header(None),
+    x_firecrawl_key: str | None = Header(None)
+):
     global _last_ledger
-    llm = LLMClient()
-    agent = InvestigativeAgent(llm)
+
+    # API key validation — fallback to env variables if headers not provided
+    bazaarlink_key = x_bazaarlink_key or OPENAI_API_KEY
+    firecrawl_key = x_firecrawl_key or FIRECRAWL_API_KEY
+
+    if not bazaarlink_key:
+        raise HTTPException(
+            status_code=401,
+            detail="BazaarLink API key is required. Please set it in the configuration."
+        )
+    if not firecrawl_key:
+        raise HTTPException(
+            status_code=401,
+            detail="Firecrawl API key is required. Please set it in the configuration."
+        )
+
+    llm = LLMClient(api_key=bazaarlink_key)
+    agent = InvestigativeAgent(llm, firecrawl_key=firecrawl_key)
     result = await agent.investigate(req.query)
 
     ledger = result["ledger"]
