@@ -35,6 +35,10 @@ class QueryRequest(BaseModel):
     query: str
 
 
+@app.get("/")
+async def root():
+    return {"status": "ok", "message": "OSINT API is running"}
+
 @app.get("/health")
 async def health():
     return {"status": "ok"}
@@ -202,8 +206,15 @@ async def explain_claim(req: ExplainRequest):
 # ── Datasets API ──────────────────────────────────────────────────────────────
 
 DATASETS_DIR = os.path.join(os.path.dirname(__file__), "datasets")
-USER_UPLOADS_DIR = os.path.join(DATASETS_DIR, "user_uploads")
-os.makedirs(USER_UPLOADS_DIR, exist_ok=True)
+if os.environ.get("VERCEL") == "1":
+    USER_UPLOADS_DIR = "/tmp/user_uploads"
+else:
+    USER_UPLOADS_DIR = os.path.join(DATASETS_DIR, "user_uploads")
+
+try:
+    os.makedirs(USER_UPLOADS_DIR, exist_ok=True)
+except Exception:
+    pass
 
 @lru_cache(maxsize=5)
 def load_dataset(file_path: str):
